@@ -30,7 +30,7 @@ async fn work() -> Result<()> {
     let client = client::Client::new();
     let pages = config().get_array("pages")?;
     let mut data = data::Data::load_or_default();
-    let mut count = 0;
+    let mut new_notices = Vec::new();
     for page in pages {
         let page = page.into_string();
         if let Err(e) = page {
@@ -42,11 +42,12 @@ async fn work() -> Result<()> {
         let latest_notice = client.get_latest_notice_full_path(&page).await?;
         if data.get(&page).map_or(true, |old| *old != latest_notice.url) {
             info!("New notice found for page {}: {}, title: {}", page, latest_notice.url, latest_notice.title);
-            count += 1;
-            data.set(&page, latest_notice.url);
+            data.set(&page, latest_notice.url.clone());
+            new_notices.push(latest_notice);
         }
     }
-    info!("{} new notices found.", count);
+    client.send_notice::<client::SCTAdapter>(&new_notices).await?;
+    info!("{} new notice(s) found.", new_notices.len());
 
     Ok(())
 }

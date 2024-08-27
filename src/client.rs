@@ -52,13 +52,13 @@ impl Client {
             }
             Ok(Notice {
                 title: title.unwrap().to_string(),
-                url: format!("{}/{}", url, href.unwrap())
+                url: format!("{}/{}", base_url, href.unwrap())
             })
         })
     }
 
     #[allow(dead_code)]
-    pub async fn send_notice<T: NoticeAdapter>(&self, message: &str) -> Result<()> {
-        T::send_notice(&self.0, message).await
+    pub async fn send_notice<T: NoticeAdapter>(&self, notice: &[Notice]) -> Result<()> {
+        T::send_notice(&self.0, notice).await
     }
 }
