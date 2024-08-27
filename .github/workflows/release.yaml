@@ -1,0 +1,68 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        build: [linux, macos, windows]
+        include:
+          - build: linux
+            os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-gnu
+            file: SEESubscriber
+            finalName: SEESubscriber-x86_64-linux-${{ github.ref_name }}
+          - build: macos
+            os: macos-latest
+            rust: stable
+            target: x86_64-apple-darwin
+            file: SEESubscriber
+            finalName: SEESubscriber-x86_64-macos-${{ github.ref_name }}
+          - build: windows
+            os: windows-latest
+            rust: stable
+            target: x86_64-pc-windows-msvc
+            file: SEESubscriber.exe
+            finalName: SEESubscriber-x86_64-windows-${{ github.ref_name }}.exe
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          profile: minimal
+          override: true
+          target: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Install dependencies (Linux only)
+        if: matrix.build == 'linux'
+        run: sudo apt-get install -y pkg-config libssl-dev
+
+      - name: Build
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+          mv target/${{ matrix.target }}/release/${{ matrix.file }} target/${{ matrix.target }}/release/${{ matrix.finalName }}
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/${{ matrix.target }}/release/${{ matrix.finalName }}
+          draft: true
+          name: SEE Subscriber ${{ github.ref_name }}
