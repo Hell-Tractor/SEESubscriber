@@ -1,4 +1,5 @@
 use reqwest::header::{REFERER, USER_AGENT};
+use tokio::try_join;
 
 use crate::{constants, utils::config};
 
@@ -19,6 +20,8 @@ pub enum Error {
     ReqwestError(#[from] reqwest::Error),
     #[error(transparent)]
     ConfigError(#[from] config::ConfigError),
+    #[error(transparent)]
+    LocalNotificationError(#[from] notify_rust::error::Error),
     #[error("No element found with selector: {0}")]
     ElementNotFound(String),
 }
@@ -45,20 +48,21 @@ impl Client {
         document.select(&scraper::Selector::parse(constants::NOTICE_SELECTOR).unwrap()).next()
             .ok_or_else(|| Error::ElementNotFound(constants::NOTICE_SELECTOR.to_string()))
             .and_then(|element| {
-            let href = element.value().attr("href");
-            let title = element.value().attr("title");
-            if href.is_none() || title.is_none() {
-                return Err(Error::ElementNotFound(constants::NOTICE_SELECTOR.to_string()));
-            }
-            Ok(Notice {
-                title: title.unwrap().to_string(),
-                url: format!("{}/{}", base_url, href.unwrap())
+                let href = element.value().attr("href");
+                let title = element.value().attr("title");
+                if href.is_none() || title.is_none() {
+                    return Err(Error::ElementNotFound(constants::NOTICE_SELECTOR.to_string()));
+                }
+                Ok(Notice {
+                    title: title.unwrap().to_string(),
+                    url: format!("{}/{}", base_url, href.unwrap())
+                })
             })
-        })
     }
-
-    #[allow(dead_code)]
-    pub async fn send_notice<T: NoticeAdapter>(&self, notice: &[Notice]) -> Result<()> {
-        T::send_notice(&self.0, notice).await
+    pub async fn send_notice(&self, notice: &[Notice]) -> Result<()> {
+        try_join!(
+            LocalAdapter::send_notice(&self.0, notice),
+            SCTAdapter::send_notice(&self.0, notice)
+        ).map(|_| ())
     }
 }

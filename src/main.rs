@@ -46,7 +46,7 @@ async fn work() -> Result<()> {
             new_notices.push(latest_notice);
         }
     }
-    client.send_notice::<client::SCTAdapter>(&new_notices).await?;
+    client.send_notice(&new_notices).await?;
     info!("{} new notice(s) found.", new_notices.len());
 
     Ok(())
