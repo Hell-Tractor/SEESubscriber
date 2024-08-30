@@ -7,7 +7,7 @@
 ## 使用说明
 
 1. 从[Release](https://github.com/Hell-Tractor/SEESubscriber/releases)页面下载最新版本的可执行文件。
-2. 创建config.yaml文件（或从项目根目录下载）。并将其放置在可执行文件同一目录下。
+2. 创建config.yaml文件（或从release页面下载）。并将其放置在可执行文件同一目录下。
 3. 按需修改config.yaml文件中的配置。
 4. 配置环境变量
 5. 运行可执行文件。

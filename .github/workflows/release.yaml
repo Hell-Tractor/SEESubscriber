@@ -63,6 +63,8 @@ jobs:
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
-          files: target/${{ matrix.target }}/release/${{ matrix.finalName }}
+          files: |
+            target/${{ matrix.target }}/release/${{ matrix.finalName }}
+            config.yaml
           draft: true
           name: SEE Subscriber ${{ github.ref_name }}
