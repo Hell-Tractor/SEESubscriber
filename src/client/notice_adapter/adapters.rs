@@ -23,7 +23,9 @@ impl NoticeAdapter for LocalAdapter {
             .summary(format!("学院已发布{}条新的通知/公告", notice.len()).as_str())
             .body(notice.iter().map(|n| format!("- {}", n.title)).collect::<Vec<String>>().join("\n").as_str())
             .timeout(Timeout::Milliseconds(3000))
-            .show().map_err(|e| e.into())
+            .show()
+            .map(|_| ())
+            .map_err(|e| e.into())
     }
 }
 
