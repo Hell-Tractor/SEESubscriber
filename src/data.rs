@@ -37,8 +37,8 @@ impl Data {
         self.0.insert(key.to_string(), value);
     }
 
-    pub fn get<'a>(&'a self, key: &str) -> Option<&'a String> {
-        self.0.get(key)
+    pub fn get<'a>(&'a self, key: &str) -> Option<&'a str> {
+        self.0.get(key).map(|s| s.as_str())
     }
 
     pub fn save(&self) {

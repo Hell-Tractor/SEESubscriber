@@ -16,9 +16,11 @@
 
 - `url`: 通知/公告页面的URL，参考[config.yaml](config.yaml)。一般情况下无需修改。
 - `pages`: 需要订阅的页面。请访问[通知公告](http://see.tongji.edu.cn/notice)页面，自行查看并修改需要订阅的页面
-- `notice`: 需要的通知发送方式。目前支持`sct`和`local`两种方式。分别为Server酱推送和本地通知。`sct`方式需要配置`NOTICE_SCT_KEY`环境变量。
+- `notice`: 需要的通知发送方式。目前支持`sct`和`local`两种方式。分别为Server酱推送和本地通知。`sct`方式需要配置`SEE_SCT_KEY`环境变量。
+- `lecture_url`: 获取同济大讲堂的URL。一般情况下无需修改。
 
 ## 环境变量
 
 - `RUST_LOG`: 控制日志输出等级。
-- `NOTICE_SCT_KEY`: Server酱的SCT_KEY，用于推送通知到微信。参考[Server酱](https://sct.ftqq.com/)。
+- `SEE_SCT_KEY`: Server酱的SCT_KEY，用于推送通知到微信。参考[Server酱](https://sct.ftqq.com/)。
+- `SEE_SESSION_ID`: [1.tongji.edu.cn](1.tongji.edu.cn)的Session ID。用于获取同济大讲堂。

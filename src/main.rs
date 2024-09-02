@@ -1,3 +1,4 @@
+use client::Lecture;
 use log::{error, info, warn};
 use utils::config;
 
@@ -48,6 +49,14 @@ async fn work() -> Result<()> {
     }
     client.send_notice(&new_notices).await?;
     info!("{} new notice(s) found.", new_notices.len());
+
+    info!("Getting new lectures...");
+    let new_lectures = client.get_new_lectures(data.get("last_lecture_id")).await?;
+    client.send_lecture(&new_lectures).await?;
+    if new_lectures.len() > 0 {
+        data.set("last_lecture_id", new_lectures[new_lectures.len() - 1].id.clone());
+    }
+    info!("{} new lecture(s) found.", new_lectures.len());
 
     Ok(())
 }

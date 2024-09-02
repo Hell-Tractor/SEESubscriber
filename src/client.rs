@@ -1,7 +1,7 @@
 use reqwest::header::{REFERER, USER_AGENT};
 use tokio::try_join;
 
-use crate::{constants, utils::config};
+use crate::{constants, data, utils::config};
 
 mod notice_adapter;
 
@@ -14,6 +14,27 @@ pub struct Notice {
     pub url: String
 }
 
+#[derive(serde::Deserialize)]
+pub struct Lecture {
+    #[serde(rename = "cathedra")]
+    pub title: String,
+    #[serde(rename = "classLevelName")]
+    pub level: String,
+    #[serde(rename = "lectureTime")]
+    pub time: String,
+    #[serde(rename = "lectureId")]
+    pub id: String,
+    #[serde(rename = "nameSpeaker")]
+    pub speaker: String,
+}
+
+#[derive(serde::Deserialize)]
+struct LectureListVo {
+    code: i32,
+    msg: String,
+    data: Vec<Lecture>,
+}
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
@@ -24,6 +45,10 @@ pub enum Error {
     LocalNotificationError(#[from] notify_rust::error::Error),
     #[error("No element found with selector: {0}")]
     ElementNotFound(String),
+    #[error(transparent)]
+    SerdeJsonError(#[from] serde_json::Error),
+    #[error("Unknown error: {0}")]
+    UnknownError(String),
 }
 
 type Result<T> = std::result::Result<T, Error>;
@@ -59,10 +84,38 @@ impl Client {
                 })
             })
     }
+
+    pub async fn get_new_lectures(&self, last_lecutre_id: Option<&str>) -> Result<Vec<Lecture>> {
+        let url = config().get_string("lecture_url")?;
+        let session_id = config().get_string("session_id")?;
+
+        let response = self.0.get(&url)
+            .header("Cookie", format!("sessionid={}", session_id))
+            .header("Referer", "https://1.tongji.edu.cn/workbench")
+            .send().await?
+            .text().await?;
+        let lecture_list: LectureListVo = serde_json::from_str(&response)?;
+        if lecture_list.code != 200 {
+            return Err(Error::UnknownError(lecture_list.msg));
+        }
+
+        Ok(lecture_list.data.into_iter()
+            .skip_while(|lecture| last_lecutre_id.map_or(false, |id| lecture.id == id))
+            .filter(|lecture| last_lecutre_id.map_or(false, |id| lecture.id != id))
+            .collect::<Vec<_>>())
+    }
+
     pub async fn send_notice(&self, notice: &[Notice]) -> Result<()> {
         try_join!(
             LocalAdapter::send_notice(&self.0, notice),
             SCTAdapter::send_notice(&self.0, notice)
+        ).map(|_| ())
+    }
+
+    pub async fn send_lecture(&self, lectures: &[Lecture]) -> Result<()> {
+        try_join!(
+            LocalAdapter::send_lecture(&self.0, lectures),
+            SCTAdapter::send_lecture(&self.0, lectures)
         ).map(|_| ())
     }
 }
