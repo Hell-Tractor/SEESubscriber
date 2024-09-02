@@ -1,4 +1,4 @@
 url: "https://see.tongji.edu.cn/index"
 pages: [ "tz.htm", "gg.htm", "jz.htm", "jqzyhd.htm" ]
 notice: [ "sct", "local" ]
-lecture_url: "https://1.tongji.edu.cn/api/lectureservice/lectureHallApply/workbenchLectureList?_t=1725243049355"
+lecture_url: "https://1.tongji.edu.cn/api/lectureservice/lectureHallApply/workbenchLectureList"

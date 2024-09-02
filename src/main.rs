@@ -1,4 +1,3 @@
-use client::Lecture;
 use log::{error, info, warn};
 use utils::config;
 

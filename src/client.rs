@@ -1,7 +1,8 @@
+use log::debug;
 use reqwest::header::{REFERER, USER_AGENT};
 use tokio::try_join;
 
-use crate::{constants, data, utils::config};
+use crate::{constants, utils::config};
 
 mod notice_adapter;
 
@@ -87,13 +88,16 @@ impl Client {
 
     pub async fn get_new_lectures(&self, last_lecutre_id: Option<&str>) -> Result<Vec<Lecture>> {
         let url = config().get_string("lecture_url")?;
-        let session_id = config().get_string("session_id")?;
+        let session_id = config().get_string("session.id")?;
+        let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis();
 
         let response = self.0.get(&url)
             .header("Cookie", format!("sessionid={}", session_id))
             .header("Referer", "https://1.tongji.edu.cn/workbench")
+            .query(&[("_t", timestamp)])
             .send().await?
             .text().await?;
+        debug!("Lecture response: {}", response);
         let lecture_list: LectureListVo = serde_json::from_str(&response)?;
         if lecture_list.code != 200 {
             return Err(Error::UnknownError(lecture_list.msg));
@@ -101,7 +105,7 @@ impl Client {
 
         Ok(lecture_list.data.into_iter()
             .skip_while(|lecture| last_lecutre_id.map_or(false, |id| lecture.id == id))
-            .filter(|lecture| last_lecutre_id.map_or(false, |id| lecture.id != id))
+            .filter(|lecture| last_lecutre_id.map_or(true, |id| lecture.id != id))
             .collect::<Vec<_>>())
     }
 
