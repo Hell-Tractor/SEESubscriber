@@ -46,8 +46,8 @@ pub enum Error {
     LocalNotificationError(#[from] notify_rust::error::Error),
     #[error("No element found with selector: {0}")]
     ElementNotFound(String),
-    #[error(transparent)]
-    SerdeJsonError(#[from] serde_json::Error),
+    #[error("Failed to deserialize JSON: {0}. Text: {1}")]
+    SerdeJsonError(serde_json::Error, String),
     #[error("Unknown error: {0}")]
     UnknownError(String),
 }
@@ -98,7 +98,7 @@ impl Client {
             .send().await?
             .text().await?;
         debug!("Lecture response: {}", response);
-        let lecture_list: LectureListVo = serde_json::from_str(&response)?;
+        let lecture_list: LectureListVo = serde_json::from_str(&response).map_err(|e| Error::SerdeJsonError(e, response))?;
         if lecture_list.code != 200 {
             return Err(Error::UnknownError(lecture_list.msg));
         }
