@@ -1,3 +1,4 @@
+use client::Lecture;
 use log::{error, info, warn};
 use utils::config;
 
@@ -5,6 +6,7 @@ mod utils;
 mod data;
 mod constants;
 mod client;
+mod login;
 
 #[derive(thiserror::Error, Debug)]
 enum Error {
@@ -50,11 +52,15 @@ async fn work() -> Result<()> {
     info!("{} new notice(s) found.", new_notices.len());
 
     info!("Getting new lectures...");
-    let new_lectures = client.get_new_lectures(data.get("last_lecture_id")).await?;
+    let session_id = data.get("sessionid");
+    let old_lectures: Vec<Lecture> = match data.get("lectures") {
+        Some(lectures) => serde_json::from_str(lectures).unwrap_or(Vec::new()),
+        None => Vec::new()
+    };
+    let (new_lectures, all_lectures, new_session_id) = client.get_new_lectures(old_lectures, &session_id).await?;
     client.send_lecture(&new_lectures).await?;
-    if new_lectures.len() > 0 {
-        data.set("last_lecture_id", new_lectures[new_lectures.len() - 1].id.clone());
-    }
+    data.set("lectures", serde_json::to_string(&all_lectures).unwrap());
+    data.set("sessionid", new_session_id);
     info!("{} new lecture(s) found.", new_lectures.len());
 
     Ok(())
