@@ -175,14 +175,16 @@ impl Client {
     pub async fn send_notice(&self, notice: &[Notice]) -> Result<()> {
         try_join!(
             LocalAdapter::send_notice(&self.client, notice),
-            SCTAdapter::send_notice(&self.client, notice)
+            SCTAdapter::send_notice(&self.client, notice),
+            SC3Adapter::send_notice(&self.client, notice)
         ).map(|_| ())
     }
 
     pub async fn send_lecture(&self, lectures: &[Lecture]) -> Result<()> {
         try_join!(
             LocalAdapter::send_lecture(&self.client, lectures),
-            SCTAdapter::send_lecture(&self.client, lectures)
+            SCTAdapter::send_lecture(&self.client, lectures),
+            SC3Adapter::send_lecture(&self.client, lectures)
         ).map(|_| ())
     }
 }

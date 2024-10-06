@@ -1,48 +1,10 @@
-use log::{debug, info};
-use notify_rust::Notification;
-use notify_rust::Timeout;
+use log::info;
 use reqwest::Client;
 
 use super::NoticeAdapter;
 use super::super::Notice;
 use super::super::Result;
-
-fn is_configured(key: &str) -> bool {
-    crate::config().get_array("notice").map(|array| array.into_iter().filter_map(|v| v.into_string().ok()).any(|v| v.to_lowercase() == key.to_lowercase())).unwrap_or(false)
-}
-
-pub struct LocalAdapter;
-
-impl LocalAdapter {
-    async fn send_msg(title: &str, body: &str) -> Result<()> {
-        info!("Sending local message...");
-        if !is_configured("local") {
-            info!("LocalAdapter not configured, skipping...");
-            return Ok(());
-        }
-        Notification::new()
-            .summary(title)
-            .body(body)
-            .timeout(Timeout::Milliseconds(3000))
-            .show()
-            .map(|_| ())
-            .map_err(|e| e.into())
-    }
-}
-
-impl NoticeAdapter for LocalAdapter {
-    async fn send_notice(_client: &Client, notice: &[Notice]) -> Result<()> {
-        let title = format!("学院已发布{}条新的通知/公告", notice.len());
-        let body = notice.iter().map(|n| format!("- {}", n.title)).collect::<Vec<String>>().join("\n");
-        LocalAdapter::send_msg(&title, &body).await
-    }
-
-    async fn send_lecture(_client: &Client, lecture: &[crate::client::Lecture]) -> Result<()> {
-        let title = format!("找到{}条新的同济大讲堂", lecture.len());
-        let body = lecture.iter().map(|l| format!("- {}", l.title)).collect::<Vec<String>>().join("\n");
-        LocalAdapter::send_msg(&title, &body).await
-    }
-}
+use super::is_configured;
 
 pub struct SCTAdapter;
 
@@ -63,7 +25,6 @@ impl SCTAdapter {
         let response = client.post(&url)
             .form(&[("title", title), ("desp", desp), ("short", short)])
             .send().await?;
-        debug!("SCT url: {url}, SCT message: title: {title}, desp: {desp}, short: {short}");
         info!("SCT message sent.");
         response.error_for_status().map_err(|e| e.into()).map(|_| ())
     }
