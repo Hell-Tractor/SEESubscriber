@@ -187,4 +187,12 @@ impl Client {
             SC3Adapter::send_lecture(&self.client, lectures)
         ).map(|_| ())
     }
+
+    pub async fn report_error(&self, message: &str, err: &crate::Error) -> Result<()> {
+        try_join!(
+            LocalAdapter::report_error(&self.client, message, err),
+            SCTAdapter::report_error(&self.client, message, err),
+            SC3Adapter::report_error(&self.client, message, err)
+        ).map(|_| ())
+    }
 }

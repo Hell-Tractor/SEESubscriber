@@ -39,4 +39,10 @@ impl NoticeAdapter for LocalAdapter {
         let body = lecture.iter().map(|l| format!("- {}", l.title)).collect::<Vec<String>>().join("\n");
         LocalAdapter::send_msg(&title, &body).await
     }
+
+    async fn report_error(_client: &Client, message: &str, err: &crate::Error) -> crate::client::Result<()> {
+        let title = "SEESubscriber执行失败";
+        let body = format!("{}\n\nError: {}", message, err);
+        LocalAdapter::send_msg(title, &body).await
+    }
 }

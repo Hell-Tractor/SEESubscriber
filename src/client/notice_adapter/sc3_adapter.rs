@@ -50,4 +50,11 @@ impl NoticeAdapter for SC3Adapter {
         let short = format!(r#""{}"等{}条同济大讲堂"#, lecture[0].title, lecture.len());
         SC3Adapter::send_msg(client, "找到新的同济大讲堂", &desp, &short, "同济大学|同济大讲堂").await
     }
+
+    async fn report_error(client: &Client, message: &str, err: &crate::Error) -> crate::client::Result<()> {
+        let desp = format!("{}\n\nError: `{}`", message, err);
+        let short = "SEESubscriber执行失败";
+        let title = "SEESubscriber执行失败";
+        SC3Adapter::send_msg(client, title, &desp, short, "告警").await
+    }
 }

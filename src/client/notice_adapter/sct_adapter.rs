@@ -50,4 +50,11 @@ impl NoticeAdapter for SCTAdapter {
         let short = format!(r#""{}"等{}条同济大讲堂"#, lecture[0].title, lecture.len());
         SCTAdapter::send_msg(client, "找到新的同济大讲堂", &desp, &short).await
     }
+
+    async fn report_error(client: &Client, message: &str, err: &crate::Error) -> crate::client::Result<()> {
+        let desp = format!("{}\n\nError: `{}`", message, err);
+        let short = "SEESubscriber执行失败";
+        let title = "SEESubscriber执行失败";
+        SCTAdapter::send_msg(client, title, &desp, short).await
+    }
 }

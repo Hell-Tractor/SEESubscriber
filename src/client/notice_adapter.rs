@@ -12,6 +12,7 @@ pub use sc3_adapter::SC3Adapter;
 pub trait NoticeAdapter {
     async fn send_notice(client: &Client, notice: &[Notice]) -> super::Result<()>;
     async fn send_lecture(client: &Client, lecture: &[Lecture]) -> super::Result<()>;
+    async fn report_error(client: &Client, message: &str, err: &crate::Error) -> super::Result<()>;
 }
 
 fn is_configured(key: &str) -> bool {

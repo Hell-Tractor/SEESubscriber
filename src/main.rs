@@ -22,14 +22,25 @@ type Result<T> = std::result::Result<T, Error>;
 async fn main() {
     pretty_env_logger::init_timed();
     info!("Starting...");
-    if let Err(e) = work().await {
+    let client = client::Client::new();
+    if let Err(e) = work(&client).await {
         error!("Error: {}", e);
+        if let Ok(true) = config().get::<bool>("report_error") {
+            info!("`report_error` configured as true, sending error...");
+            let time = chrono::Local::now().naive_local();
+            if let Err(e) = client.report_error(&format!("{}", time), &e).await {
+                error!("Failed to report error: {}", e);
+                return;
+            }
+            info!("Success to report error, program exiting...");
+        } else {
+            info!("`report_error` not configured as true, program will exit directly.");
+        }
     }
-    info!("Done...");
+    info!("Done.");
 }
 
-async fn work() -> Result<()> {
-    let client = client::Client::new();
+async fn work(client: &client::Client) -> Result<()> {
     let pages = config().get_array("pages")?;
     let mut data = data::Data::load_or_default();
     let mut new_notices = Vec::new();

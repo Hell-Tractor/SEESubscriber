@@ -16,14 +16,15 @@
 
 - `url`: 通知/公告页面的URL，参考[config.yaml](config.yaml)。一般情况下无需修改。
 - `pages`: 需要订阅的页面。请访问[通知公告](http://see.tongji.edu.cn/notice)页面，自行查看并修改需要订阅的页面
-- `notice`: 需要的通知发送方式。目前支持`sct`、`sc3`和`local`三种方式。分别为Server酱、Server酱$^3$推送和本地通知。`sct`与`sc3`方式需要配置对应的环境变量，见下文。
+- `notice`: 需要的通知发送方式。目前支持`sct`、`sc3`和`local`三种方式。分别为Server酱、Server酱 $^3$ 推送和本地通知。`sct`与`sc3`方式需要配置对应的环境变量，见下文。
 - `lecture_url`: 获取同济大讲堂的URL。一般情况下无需修改。
+- `report_error`: 当程序执行失败时，是否通过`notice`定义的渠道发送错误消息。
 
 ## 环境变量
 
 - `RUST_LOG`: 控制日志输出等级。
 - `SEE_SCT_KEY`: Server酱的SCT_KEY，用于推送通知到微信。参考[Server酱](https://sct.ftqq.com/)。
-- `SEE_SC3_KEY`: Server酱$^3$的SC3_KEY，用于推送通知到APP。参考[Server酱$^3$](https://sc3.ft07.com/)。
+- `SEE_SC3_KEY`: Server酱 $^3$ 的SC3_KEY，用于推送通知到APP。参考[Server酱 $^3$ ](https://sc3.ft07.com/)。
 - `SEE_LOGIN_USERNAME`: 用于统一身份验证的用户名
 - `SEE_LOGIN_PASSWORD`: 用于统一身份验证的密码
 
