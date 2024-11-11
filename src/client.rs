@@ -86,7 +86,7 @@ impl Client {
     }
 
     pub async fn get_latest_notice_full_path(&self, sub_path: &str) -> Result<Notice> {
-        let base_url = config().get_string("url")?;
+        let base_url = config().get_string("school_notice.url")?;
         let url = format!("{}/{}", base_url, sub_path);
         let response = self.client.get(&url).send().await?.text().await?;
         let document = scraper::Html::parse_document(&response);
@@ -125,7 +125,7 @@ impl Client {
     /// return: (new, all_valid, sessionid)
     pub async fn get_new_lectures(&self, old_lectures: Vec<Lecture>, session_id: &Option<&str>) -> Result<(Vec<Lecture>, Vec<Lecture>, String)> {
         let old_lectures = Client::remove_outdated_lectures(old_lectures);
-        let url = config().get_string("lecture_url")?;
+        let url = config().get_string("lecture.url")?;
         let timestamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis();
         let username = config().get_string("login.username")?;
         let password = config().get_string("login.password")?;

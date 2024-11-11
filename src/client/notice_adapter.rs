@@ -16,5 +16,5 @@ pub trait NoticeAdapter {
 }
 
 fn is_configured(key: &str) -> bool {
-    crate::config().get_array("notice").map(|array| array.into_iter().filter_map(|v| v.into_string().ok()).any(|v| v.to_lowercase() == key.to_lowercase())).unwrap_or(false)
+    crate::config().get_array("notice.type").map(|array| array.into_iter().filter_map(|v| v.into_string().ok()).any(|v| v.to_lowercase() == key.to_lowercase())).unwrap_or(false)
 }
